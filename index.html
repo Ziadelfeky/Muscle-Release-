@@ -200,8 +200,9 @@ input::placeholder,textarea::placeholder{color:#6b665d;}
         <span class="err-msg" id="e-name"></span>
       </div>
       <div class="field">
-        <label class="lbl">Date of Birth</label>
-        <input type="date" id="f-dob">
+        <label class="lbl">Date of Birth <span class="req">*</span></label>
+        <input type="date" id="f-dob" onchange="checkAge()">
+        <span class="err-msg" id="e-dob"></span>
       </div>
     </div>
     <div class="row">
@@ -220,6 +221,19 @@ input::placeholder,textarea::placeholder{color:#6b665d;}
         <span class="err-msg" id="e-phone"></span>
       </div>
     </div>
+  
+    <div id="guardian-wrap" style="display:none;margin-top:6px;">
+      <div class="info-box" style="margin-bottom:14px;">Clients under 18 need a parent or guardian's consent, and the parent or guardian must be present during the session.</div>
+      <div class="field">
+        <label class="lbl">Parent or guardian's full name <span class="req">*</span></label>
+        <input type="text" id="f-guardian" placeholder="Full name">
+      </div>
+      <label class="consent-check" style="margin-top:0;">
+        <input type="checkbox" id="guardian-check">
+        <span>I am the parent or guardian. I consent to this session and will be present during it.</span>
+      </label>
+      <span class="err-msg" id="e-guardian" style="display:block;margin-top:8px;"></span>
+    </div>
   </div>
 
   <!-- 02 SESSION -->
@@ -233,7 +247,7 @@ input::placeholder,textarea::placeholder{color:#6b665d;}
     </div>
 
     <div class="info-box" style="margin-bottom:16px;">
-      Session durations are estimates. If the area being worked presents with high levels of tension, adhesion, or restricted tissue — the session may extend beyond the estimated time to ensure the work is completed properly. Your coach will communicate this during the session.
+      Session durations are estimates. If an area has a lot of tension or restricted tissue, the session may need to run longer to finish the work properly. Coach Ziad will always tell you before extending, and any change to the fee is agreed with you first.
     </div>
 
     <div class="field">
@@ -261,7 +275,7 @@ input::placeholder,textarea::placeholder{color:#6b665d;}
     </div>
 
     <div class="field">
-      <label class="lbl">Have you had manual therapy or massage before?</label>
+      <label class="lbl">Have you had soft-tissue work or massage before?</label>
       <div class="pills" id="p-prev-therapy"></div>
     </div>
   </div>
@@ -272,6 +286,13 @@ input::placeholder,textarea::placeholder{color:#6b665d;}
 
     <div class="info-box">
       This information is used solely to ensure your safety during the session. All details are kept strictly confidential.
+    </div>
+
+    <div class="field">
+      <label class="lbl">Do any of these apply to you right now? <span class="req">*</span></label>
+      <div class="pills" id="p-screen"></div>
+      <span class="err-msg" id="e-screen"></span>
+      <div class="info-box" style="margin-top:10px;margin-bottom:0;">If any apply, the session may be adapted, postponed, or need your doctor's clearance first. I'll go through it with you before we start.</div>
     </div>
 
     <div class="field">
@@ -306,7 +327,7 @@ input::placeholder,textarea::placeholder{color:#6b665d;}
     <div class="sec-hdr"><span class="sec-num">04</span><span class="sec-title">Session Preference</span></div>
 
     <div class="info-box">
-      <strong>For best results</strong>, Muscle Release & Recovery is performed directly on skin with oil. This allows proper tissue depth, reduces friction, and maximizes the effectiveness of each technique. If clothing is preferred, please read the note carefully before choosing.
+      <strong>For best results</strong>, Muscle Release & Recovery is performed directly on skin with oil. This allows proper tissue depth, reduces friction, and maximizes the effectiveness of each technique. If clothing is preferred, please read the note carefully before choosing.<br><br><strong>Hips and glutes are always worked over shorts, with no exceptions.</strong>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
@@ -333,7 +354,7 @@ input::placeholder,textarea::placeholder{color:#6b665d;}
             </div>
           </div>
           <div class="clothing-card-body">
-            Professional massage oil is applied directly to skin. Allows full tissue depth, maximum precision, and the most effective release. Please wear appropriate clothing you are comfortable removing for the areas being worked on.
+            Professional massage oil is applied directly to skin. Allows full tissue depth, maximum precision, and the most effective release. Please wear appropriate clothing you are comfortable removing for the areas being worked on. Hips and glutes are always worked over shorts.
           </div>
         </div>
 
@@ -370,7 +391,7 @@ input::placeholder,textarea::placeholder{color:#6b665d;}
 
       <div class="disclaimer-section">
         <div class="disclaimer-section-title">What to Expect During the Session</div>
-        <p>Muscle Release & Recovery involves hands-on manual therapy including soft tissue work, myofascial release, and targeted pressure techniques performed by Coach Ziad Elfeky. All work is conducted professionally and with complete respect for personal boundaries at all times.</p>
+        <p>Muscle Release & Recovery is hands-on soft-tissue work, including myofascial release and targeted pressure techniques, performed by Coach Ziad Elfeky. All work is conducted professionally and with complete respect for personal boundaries at all times. Hips and glutes are always worked over shorts, with no exceptions.</p>
       </div>
 
       <div class="disclaimer-section">
@@ -395,7 +416,7 @@ input::placeholder,textarea::placeholder{color:#6b665d;}
 
       <label class="consent-check">
         <input type="checkbox" id="consent-check">
-        <span>I have read and understood all of the above. I consent to hands-on manual therapy performed by Coach Ziad Elfeky, including my chosen session and clothing preference. I confirm that the health information I have provided is accurate to the best of my knowledge, and I will communicate any concerns or boundaries before or during the session.</span>
+        <span>I have read and understood all of the above. I consent to hands-on soft-tissue work performed by Coach Ziad Elfeky, including my chosen session and clothing preference, and I understand that hips and glutes are always worked over shorts. I confirm that the health information I have provided is accurate to the best of my knowledge, and I will communicate any concerns or boundaries before or during the session.</span>
       </label>
       <span class="err-msg" id="e-consent" style="display:block;margin-top:8px;"></span>
     </div>
@@ -520,6 +541,38 @@ function togglePill(id, val, multi, btn) {
 
 function getPill(id) { return pillState[id]; }
 
+// Multi-select where "None of these" clears the others, and any other choice clears "None of these"
+function initExclusive(id, opts, none) {
+  pillState[id] = [];
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = '';
+  opts.forEach(function(opt) {
+    var btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'pill'; btn.innerHTML = ' ' + opt;
+    btn.addEventListener('click', function() {
+      var arr = pillState[id], i = arr.indexOf(opt);
+      if (i > -1) arr.splice(i, 1);
+      else if (opt === none) pillState[id] = arr = [none];
+      else { var n = arr.indexOf(none); if (n > -1) arr.splice(n, 1); arr.push(opt); }
+      el.querySelectorAll('.pill').forEach(function(b, j) { b.classList.toggle('on', pillState[id].indexOf(opts[j]) > -1); });
+      var e = document.getElementById('e-' + id.replace('p-', '')); if (e && pillState[id].length) e.textContent = '';
+    });
+    el.appendChild(btn);
+  });
+}
+
+function ageFrom(v) {
+  var d = new Date(v); if (!v || isNaN(d)) return null;
+  var t = new Date(), a = t.getFullYear() - d.getFullYear(), m = t.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && t.getDate() < d.getDate())) a--;
+  return a;
+}
+function checkAge() {
+  var a = ageFrom(document.getElementById('f-dob').value);
+  document.getElementById('guardian-wrap').style.display = (a !== null && a < 18) ? 'block' : 'none';
+}
+
 function selectClothing(choice) {
   clothingChoice = choice;
   document.getElementById('card-skin').classList.toggle('selected', choice === 'skin');
@@ -554,6 +607,7 @@ function initAll() {
   initPills('p-skin', ['No conditions','Eczema','Psoriasis','Sensitive skin','Recent scars','Sunburn','Open wounds'], true);
   initPills('p-meds', ['No','Yes — blood thinners','Yes — other medication','Prefer not to say'], false);
   initPills('p-referral', ['Instagram','Friend / family referral','Kraft member','Google','Other'], false);
+  initExclusive('p-screen', ['Blood clot or DVT, now or in the past','Pregnant','Surgery, a fracture or stitches in the last 3 months','Fever, infection or feeling unwell','Cancer, or currently in treatment','Varicose veins in an area to be worked','None of these'], 'None of these');
   initBodyAreas();
 }
 
@@ -709,6 +763,15 @@ function validate() {
     if (!el.value.trim()) { el.classList.add('err'); err.textContent = 'Required'; ok = false; }
     else { el.classList.remove('err'); err.textContent = ''; }
   });
+  var dob = document.getElementById('f-dob'), dobErr = document.getElementById('e-dob'), age = ageFrom(dob.value);
+  if (age === null) { dob.classList.add('err'); dobErr.textContent = 'Required'; ok = false; }
+  else { dob.classList.remove('err'); dobErr.textContent = ''; }
+  var gErr = document.getElementById('e-guardian');
+  if (age !== null && age < 18 && (!document.getElementById('f-guardian').value.trim() || !document.getElementById('guardian-check').checked)) {
+    gErr.textContent = "A parent or guardian's name and consent are required for clients under 18"; ok = false;
+  } else { gErr.textContent = ''; }
+  var scr = getPill('p-screen'); var scrErr = document.getElementById('e-screen');
+  if (!scr.length) { scrErr.textContent = 'Required. Pick "None of these" if nothing applies'; ok = false; } else { scrErr.textContent = ''; }
   var dur = getPill('p-duration'); var durErr = document.getElementById('e-duration');
   if (!dur) { durErr.textContent = 'Required'; ok = false; } else { durErr.textContent = ''; }
   var loc = getPill('p-location'); var locErr = document.getElementById('e-location');
@@ -741,7 +804,7 @@ function handleSubmit() {
     main_complaint: document.getElementById('f-complaint').value.trim(),
     complaint_duration: getPill('p-duration-complaint'),
     prev_therapy: getPill('p-prev-therapy'),
-    pain_injuries: document.getElementById('f-pain').value.trim(),
+    pain_injuries: ('[Screening: ' + getPill('p-screen').join('; ') + '] ' + document.getElementById('f-pain').value.trim()).trim(),
     avoid_areas: document.getElementById('f-avoid').value.trim(),
     skin_conditions: getPill('p-skin').join(', '),
     oil_allergies: document.getElementById('f-allergies').value.trim(),
@@ -749,7 +812,7 @@ function handleSubmit() {
     clothing_preference: clothingChoice === 'skin' ? 'On skin with oil' : 'On clothing',
     consent: document.getElementById('consent-check').checked,
     referral: getPill('p-referral'),
-    notes: document.getElementById('f-notes').value.trim(),
+    notes: ((function() { var a = ageFrom(document.getElementById('f-dob').value); return (a !== null && a < 18) ? '[Under 18 · guardian: ' + document.getElementById('f-guardian').value.trim() + ', consent confirmed] ' : ''; })() + document.getElementById('f-notes').value.trim()).trim(),
     submitted_at: new Date().toISOString()
   };
   fetch(SUPABASE_URL + '/rest/v1/' + TABLE, {
@@ -771,6 +834,8 @@ function resetForm() {
   document.querySelectorAll('input[type=text],input[type=tel],input[type=date],textarea').forEach(function(el) { el.value = ''; });
   document.querySelectorAll('select').forEach(function(el) { el.selectedIndex = 0; });
   document.getElementById('consent-check').checked = false;
+  document.getElementById('guardian-check').checked = false;
+  document.getElementById('guardian-wrap').style.display = 'none';
   document.getElementById('submit-btn').disabled = false;
   document.getElementById('submit-btn').textContent = 'Submit Intake Form';
   clothingChoice = ''; bodyAreas = [];
